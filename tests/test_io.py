@@ -39,7 +39,7 @@ def additional_fasta_fn(tmpdir, sequences):
 def gzip_fasta_fn(tmpdir, sequences):
     fn = str(tmpdir / "sequences.fasta.gz")
 
-    with gzip.open(fn, "wb") as oh:
+    with gzip.open(fn, "wt") as oh:
         SeqIO.write(sequences, oh, "fasta")
 
     return fn
@@ -76,3 +76,11 @@ class TestReadSequences:
             with open(additional_fasta_fn, "r") as additional_fh:
                 sequences = read_sequences([fh, additional_fh])
                 assert len([sequence for sequence in sequences]) == 6
+
+    def test_read_sequences_from_single_compressed_file(self, gzip_fasta_fn):
+        sequences = read_sequences(gzip_fasta_fn)
+        assert len([sequence for sequence in sequences]) == 3
+
+    def test_read_sequences_from_multiple_files_with_different_compression(self, fasta_fn, gzip_fasta_fn):
+        sequences = read_sequences([fasta_fn, gzip_fasta_fn])
+        assert len([sequence for sequence in sequences]) == 6
