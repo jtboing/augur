@@ -2,57 +2,11 @@
 """Interfaces for reading and writing data also known as input/output (I/O)
 """
 import Bio.SeqIO
-import gzip
+from pathlib import Path
+from xopen import xopen
 
 
-VALID_FORMATS = [
-    "fasta",
-    "genbank"
-]
-
-
-def infer_sequence_file_type(path_or_buffer):
-    """Infer the file type of sequences in the given path or buffer.
-
-    Parameters
-    ----------
-    path_or_buffer : str or handle
-       A path to or handle for a sequence file whose type is supported by BioPython
-
-
-    Raises
-    ------
-    ValueError
-        If the given path's format cannot be determined
-
-    Returns
-    -------
-    str :
-        format type supported by BioPython's SeqIO parse interface
-    """
-    path_format = None
-    for format in VALID_FORMATS:
-        try:
-            # Try to read the first record in the given path to determine its
-            # file format. Work from the most to least common formats.
-            sequence = next(Bio.SeqIO.parse(path_or_buffer, format))
-            path_format = format
-            break
-        except StopIteration:
-            pass
-
-    if path_format is None:
-        raise ValueError(f"Could not determine format for sequence path: '{path}'")
-
-    try:
-        path_or_buffer.seek(0)
-    except AttributeError:
-        pass
-
-    return path_format
-
-
-def read_sequences(paths_or_buffers):
+def read_sequences(paths, format):
     """Read sequences from one or more paths.
 
     Automatically infer compression mode (e.g., gzip, etc.) and file types
@@ -60,32 +14,35 @@ def read_sequences(paths_or_buffers):
 
     Parameters
     ----------
-    paths_or_buffers : str, handle, or list of str or handle
+    paths : str, Path-like, or list of str or Path-like objects
         One or more paths to sequence files of any type supported by BioPython.
+
+    format : str
+        Format of input sequences matching any of those supported by BioPython
+        (e.g., "fasta", "genbank", etc.)
 
     Yields
     ------
     Bio.SeqRecord.SeqRecord
         Sequence record from the given path(s).
     """
-    if isinstance(paths_or_buffers, str) or hasattr(paths_or_buffers, "read"):
-        paths_or_buffers = [paths_or_buffers]
+    try:
+        # Since we accept any Path-like string as an input, we try to cast the
+        # given path to a Path instance and then place it in a list. Note that
+        # this approach could break if we eventually support arbitrary URLs or
+        # paths to S3 buckets, etc.
+        paths = [Path(paths)]
+    except TypeError:
+        # If the given input is not a Path-like string, we assume it is an
+        # iterable sequence already.
+        pass
 
-    for path in paths_or_buffers:
-        compression = False
+    for path in paths:
+        # Open the given path as a handle, inferring the file's compression.
+        # This way we can pass a handle to BioPython's SeqIO interface
+        # regardless of the compression mode.
+        with xopen(path, "r") as handle:
+            sequences = Bio.SeqIO.parse(handle, format)
 
-        try:
-            path_format = infer_sequence_file_type(path)
-        except UnicodeDecodeError:
-            compression = True
-            handle = gzip.open(path, "rt")
-            path_format = infer_sequence_file_type(handle)
-            path = handle
-
-        sequences = Bio.SeqIO.parse(path, path_format)
-
-        for sequence in sequences:
-            yield sequence
-
-        if compression:
-            handle.close()
+            for sequence in sequences:
+                yield sequence
