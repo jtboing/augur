@@ -9,7 +9,7 @@ from xopen import xopen
 def read_sequences(paths, format):
     """Read sequences from one or more paths.
 
-    Automatically infer compression mode (e.g., gzip, etc. and return a stream
+    Automatically infer compression mode (e.g., gzip, etc.) and return a stream
     of sequence records in the requested format (e.g., "fasta", "genbank", etc.).
 
     Parameters
@@ -19,7 +19,7 @@ def read_sequences(paths, format):
 
     format : str
         Format of input sequences matching any of those supported by BioPython
-        (e.g., "fasta", "genbank", etc.)
+        (e.g., "fasta", "genbank", etc.).
 
     Yields
     ------
