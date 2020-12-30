@@ -50,7 +50,7 @@ def read_sequences(paths, format):
                 yield sequence
 
 
-def write_sequences(sequences, path, format):
+def write_sequences(sequences, path, format, handle=None, return_handle=False):
     """Write sequences to a given path in the given format.
 
     Automatically infer compression mode (e.g., gzip, etc.) based on the path's
@@ -68,20 +68,46 @@ def write_sequences(sequences, path, format):
         Format of input sequences matching any of those supported by BioPython
         (e.g., "fasta", "genbank", etc.)
 
+    handle : IO buffer, optional
+        An existing file handle for the given path to use when writing sequence
+        records one by one as in a for loop.
+
+    return_handle : bool, optional
+        Return the handle created for writing to the given path instead of
+        closing it.
+
     Returns
     -------
     int :
         Number of sequences written out to the given path.
 
+    IO buffer, optional :
+        A file handle that was opened to write to the given path and was
+        requested by the calling code with the `return_handle` argument.
+
     """
-    if isinstance(sequences, Bio.SeqRecord.SeqRecord):
-        raise TypeError("Input sequences must be an iterable of BioPython SeqRecord objects; individual SeqRecord objects are not supported.")
+    # Don't allow writing individual sequence records unless the caller has
+    # explicitly requested that the file handle remain open for subsequent
+    # writes.
+    if not return_handle and isinstance(sequences, Bio.SeqRecord.SeqRecord):
+        raise TypeError("Input sequences must be an iterable of BioPython SeqRecord objects unless return_handle is True.")
 
-    with xopen(path, "wt") as handle:
-        sequences_written = Bio.SeqIO.write(
-            sequences,
-            handle,
-            format
-        )
+    if handle is None:
+        handle = xopen(path, "wt")
 
-    return sequences_written
+    # Bio.SeqIO supports writing to the same handle multiple times for specific
+    # file formats. For the formats we use, this function call should work for
+    # both a newly opened file handle or one that is provided by the caller.
+    # For more details see:
+    # https://github.com/biopython/biopython/blob/25f5152f4aeefe184a323db25694fbfe0593f0e2/Bio/SeqIO/__init__.py#L233-L251
+    sequences_written = Bio.SeqIO.write(
+        sequences,
+        handle,
+        format
+    )
+
+    if return_handle:
+        return sequences_written, handle
+    else:
+        handle.close()
+        return sequences_written
