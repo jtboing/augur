@@ -2,6 +2,7 @@
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+import bz2
 import gzip
 import lzma
 from pathlib import Path
@@ -41,6 +42,15 @@ def gzip_fasta_filename(tmpdir, sequences):
     filename = str(tmpdir / "sequences.fasta.gz")
 
     with gzip.open(filename, "wt") as oh:
+        SeqIO.write(sequences, oh, "fasta")
+
+    return filename
+
+@pytest.fixture
+def bzip2_fasta_filename(tmpdir, sequences):
+    filename = str(tmpdir / "sequences.fasta.bz2")
+
+    with bz2.open(filename, "wt") as oh:
         SeqIO.write(sequences, oh, "fasta")
 
     return filename
@@ -86,6 +96,10 @@ class TestReadSequences:
 
     def test_read_sequences_from_single_lzma_file(self, lzma_fasta_filename):
         sequences = read_sequences(lzma_fasta_filename, "fasta")
+        assert len([sequence for sequence in sequences]) == 3
+
+    def test_read_sequences_from_single_bzip2_file(self, bzip2_fasta_filename):
+        sequences = read_sequences(bzip2_fasta_filename, "fasta")
         assert len([sequence for sequence in sequences]) == 3
 
     def test_read_sequences_from_multiple_files_with_different_compression(self, fasta_filename, gzip_fasta_filename, lzma_fasta_filename):
