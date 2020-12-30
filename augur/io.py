@@ -9,8 +9,8 @@ from xopen import xopen
 def read_sequences(paths, format):
     """Read sequences from one or more paths.
 
-    Automatically infer compression mode (e.g., gzip, etc.) and file types
-    (e.g., FASTA, GenBank, etc.) and return a stream of sequence records.
+    Automatically infer compression mode (e.g., gzip, etc. and return a stream
+    of sequence records in the requested format (e.g., "fasta", "genbank", etc.).
 
     Parameters
     ----------
@@ -25,6 +25,7 @@ def read_sequences(paths, format):
     ------
     Bio.SeqRecord.SeqRecord
         Sequence record from the given path(s).
+
     """
     try:
         # Since we accept any Path-like string as an input, we try to cast the
