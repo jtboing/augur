@@ -124,6 +124,13 @@ class TestWriteSequences:
         sequences_written = write_sequences(sequences, output_filename, "fasta")
         assert sequences_written == len(sequences)
 
+    def test_write_genbank_sequence(self, tmpdir, genbank_reference):
+        output_filename = Path(tmpdir) / Path("new_sequences.fasta")
+
+        reference = SeqIO.read(genbank_reference, "genbank")
+        sequences_written = write_sequences(reference, output_filename, "genbank")
+        assert sequences_written == 1
+
     def test_write_sequences_from_generator(self, tmpdir, sequences_generator):
         output_filename = Path(tmpdir) / Path("new_sequences.fasta")
         sequences_written = write_sequences(sequences_generator, output_filename, "fasta")
