@@ -66,6 +66,10 @@ class TestReadSequences:
         reference = next(read_sequences(genbank_reference))
         assert reference.id == "KX369547.1"
 
+    def test_read_single_genbank_record_from_a_path(self, genbank_reference):
+        reference = next(read_sequences(Path(genbank_reference)))
+        assert reference.id == "KX369547.1"
+
     def test_read_sequences_from_single_file_handle(self, fasta_fn):
        with open(fasta_fn, "r") as fh:
            sequences = read_sequences(fh)
