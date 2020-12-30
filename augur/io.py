@@ -47,3 +47,37 @@ def read_sequences(paths, format):
 
             for sequence in sequences:
                 yield sequence
+
+
+def write_sequences(sequences, path, format):
+    """Write sequences to a given path in the given format.
+
+    Automatically infer compression mode (e.g., gzip, etc.) based on the path's
+    filename extension.
+
+    Parameters
+    ----------
+    sequences : iterable of Bio.SeqRecord.SeqRecord objects
+        A list-like collection of sequences to write
+
+    path : str or Path-like object
+        A path to a file to write the given sequences in the given format.
+
+    format : str
+        Format of input sequences matching any of those supported by BioPython
+        (e.g., "fasta", "genbank", etc.)
+
+    Returns
+    -------
+    int :
+        Number of sequences written out to the given path.
+
+    """
+    with xopen(path, "wt") as handle:
+        sequences_written = Bio.SeqIO.write(
+            sequences,
+            handle,
+            format
+        )
+
+    return sequences_written
