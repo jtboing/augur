@@ -128,7 +128,7 @@ class TestWriteSequences:
         output_filename = Path(tmpdir) / Path("new_sequences.fasta")
 
         reference = SeqIO.read(genbank_reference, "genbank")
-        sequences_written = write_sequences(reference, output_filename, "genbank")
+        sequences_written = write_sequences([reference], output_filename, "genbank")
         assert sequences_written == 1
 
     def test_write_sequences_from_generator(self, tmpdir, sequences_generator):
@@ -162,16 +162,6 @@ class TestWriteSequences:
 
     def test_write_single_sequence_object_to_file(self, tmpdir, sequences):
         output_filename = Path(tmpdir) / Path("new_sequences.fasta")
-        sequences_written = write_sequences(sequences[0], output_filename, "fasta")
-        assert sequences_written == 1
 
-    @pytest.mark.xfail(reason="write interface only supports a single write")
-    def test_write_single_sequence_objects_to_file_in_loop(self, tmpdir, sequences):
-        output_filename = Path(tmpdir) / Path("new_sequences.fasta")
-
-        sequences_written = 0
-        for sequence in sequences:
-            sequences_written += write_sequences(sequence, output_filename, "fasta")
-
-        with open(output_filename, 'r') as handle:
-            assert sequences_written == len([line for line in handle if line.startswith(">")])
+        with pytest.raises(TypeError):
+            sequences_written = write_sequences(sequences[0], output_filename, "fasta")

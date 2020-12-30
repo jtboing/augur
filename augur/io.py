@@ -2,6 +2,7 @@
 """Interfaces for reading and writing data also known as input/output (I/O)
 """
 import Bio.SeqIO
+import Bio.SeqRecord
 from pathlib import Path
 from xopen import xopen
 
@@ -73,6 +74,9 @@ def write_sequences(sequences, path, format):
         Number of sequences written out to the given path.
 
     """
+    if isinstance(sequences, Bio.SeqRecord.SeqRecord):
+        raise TypeError("Input sequences must be an iterable of BioPython SeqRecord objects; individual SeqRecord objects are not supported.")
+
     with xopen(path, "wt") as handle:
         sequences_written = Bio.SeqIO.write(
             sequences,
