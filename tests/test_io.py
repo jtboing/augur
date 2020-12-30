@@ -165,3 +165,37 @@ class TestWriteSequences:
 
         with pytest.raises(TypeError):
             sequences_written = write_sequences(sequences[0], output_filename, "fasta")
+
+    def test_write_sequences_by_handle_it_creates(self, tmpdir, sequences):
+        output_filename = Path(tmpdir) / Path("new_sequences.fasta")
+
+        handle = None
+        total_sequences_written = 0
+        for sequence in sequences:
+            sequences_written, handle = write_sequences(
+                sequences[0],
+                output_filename,
+                "fasta",
+                handle=handle,
+                return_handle=True
+            )
+            total_sequences_written += sequences_written
+        else:
+            handle.close()
+
+        with open(output_filename, "r") as handle:
+            assert total_sequences_written == len([line for line in handle if line.startswith(">")])
+
+    def test_write_sequences_by_handle_we_create(self, tmpdir, sequences):
+        output_filename = Path(tmpdir) / Path("new_sequences.fasta")
+
+        with open(output_filename, "w") as handle:
+            sequences_written = write_sequences(
+                sequences,
+                output_filename,
+                "fasta",
+                handle=handle
+            )
+
+        with open(output_filename, "r") as handle:
+            assert sequences_written == len([line for line in handle if line.startswith(">")])
