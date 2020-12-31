@@ -15,9 +15,9 @@ from .utils import run_shell_command, shquote, open_file, is_vcf, load_mask_site
 
 def get_chrom_name(vcf_file):
     """Read the CHROM field from the first non-header line of a vcf file.
-    
+
     Returns:
-    str or None: Either the CHROM field or None if no non-comment line could be found. 
+    str or None: Either the CHROM field or None if no non-comment line could be found.
     """
     with open_file(vcf_file, mode='r') as f:
         for line in f:
@@ -206,7 +206,7 @@ def run(args):
             sys.exit(1)
         mask_vcf(mask_sites, args.sequences, out_file, args.cleanup)
     else:
-        mask_fasta(mask_sites, args.sequences, out_file, 
+        mask_fasta(mask_sites, args.sequences, out_file,
                    mask_from_beginning=args.mask_from_beginning,
                    mask_from_end=args.mask_from_end,
                    mask_invalid=args.mask_invalid)
