@@ -1,8 +1,9 @@
 """
 Parse delimited fields from FASTA sequence names into a TSV and FASTA file.
 """
-from augur.io import read_sequences, write_sequences
 import pandas as pd
+
+from .io import read_sequences, write_sequences
 
 forbidden_chactacters = str.maketrans(
     {' ': None,
